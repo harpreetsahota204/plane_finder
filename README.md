@@ -1,5 +1,6 @@
 # Plane Finder
 
+
 <div align="center">
 <p align="center">
 
@@ -32,6 +33,7 @@ models**
 </p>
 </div>
 
+![image/png](plane_finder.gif)
 
 A [FiftyOne](https://docs.voxel51.com) plugin that flags **raw carbon-fiber RC aircraft** in large aerial survey datasets — dark, geometrically regular, elongated objects sitting on noisy natural terrain.
 
