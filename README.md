@@ -90,14 +90,10 @@ Before a full run, preview what `dark_threshold` actually captures. It writes th
 
 ## Installation
 
-This plugin lives in your project repo and is registered with FiftyOne via a symlink into the plugins directory:
+Open the terminal and run:
 
 ```bash
-ln -sfn "$(pwd)/plane_finder" "$(python -c 'import fiftyone as fo; print(fo.config.plugins_dir)')/plane_finder"
-
-# verify
-fiftyone plugins list | grep plane
-fiftyone operators list | grep plane
+fiftyone plugins download https://github.com/harpreetsahota204/plane_finder
 ```
 
 Requirements: `opencv-python`, `numpy` (see `requirements.txt`). FiftyOne `>= 1.0`.
@@ -115,10 +111,17 @@ Open the operator browser (`` ` `` backtick), search **"Find Plane"** or **"Prev
 ```python
 import fiftyone as fo
 import fiftyone.operators as foo
+from fiftyone.utils.huggingface import load_from_hub
 
-dataset = fo.load_dataset("Ariel_Scans")
+# Other available arguments include 'max_samples', 'persistent', etc.
+dataset = load_from_hub(
+    "harpreetsahota/ariel_scans",
+    persistent=True,
+    overwrite=True
+    )
 
 preview = foo.get_operator("@harpreetsahota/plane_finder/preview_dark_mask")
+
 find_plane = foo.get_operator("@harpreetsahota/plane_finder/find_plane")
 
 # 1) Calibrate the threshold on a handful of images (view the dark_mask heatmap in the App)
@@ -145,6 +148,7 @@ strong = dataset.filter_labels("plane_candidates", F("confidence") > 0.6)
 Both operators have a **Delegate execution** checkbox (default **off**):
 
 - **Off** — runs immediately with a live progress bar. Best for small views and calibration.
+
 - **On** — queues a background job; process it with `fiftyone delegated launch` in a terminal. Recommended for large datasets (thousands of full-res frames).
 
 ---
@@ -154,9 +158,13 @@ Both operators have a **Delegate execution** checkbox (default **off**):
 Start here, in order:
 
 1. **`dark_threshold`** — the single most important knob. Calibrate it with `preview_dark_mask`. If your survey altitude differs from the sample this was tuned on, this is the first thing to change.
+
 2. **`min_diag_px` / `max_diag_px`** — set these to the expected on-screen size of the airframe in pixels. On high-resolution frames the defaults (28–400) are likely too small; widen the gate to match your imagery.
+
 3. **`min_aspect_ratio`** — raise toward 3.0+ for a clearly elongated wing; lower toward 2.0 if the airframe can appear foreshortened or partially obscured.
+
 4. **`max_interior_std`** — lower (toward ~12) to demand a smoother surface and reject noisy vegetation; raise if the target's surface is textured.
+
 5. **`min_score` / `max_per_image`** — once tuned, use these to write only the best candidates per frame so the App stays clean.
 
 ---
@@ -164,5 +172,7 @@ Start here, in order:
 ## Notes & limitations
 
 - **Classical CV, not ML** — no model, no training, fast and fully interpretable, but tuning-sensitive. It is a triage tool to shrink thousands of frames down to a reviewable shortlist, not an autonomous classifier.
+
 - **Mixed-resolution datasets** — if your data contains both high-res RGB and small thermal/IR frames, the pixel-based size gates behave differently across them. Consider tagging them into separate views and running with resolution-appropriate settings.
+
 - **Unreadable files** — formats OpenCV can't decode (e.g. HEIC) are skipped and recorded with an empty detections list and a score of 0.
