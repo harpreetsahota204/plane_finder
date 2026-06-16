@@ -1,0 +1,8 @@
+name: "@harpreetsahota/plane_finder"
+version: 1.0.0
+description: Flags dark, elongated, smooth blobs as raw carbon-fiber aircraft candidates in aerial survey imagery
+fiftyone:
+  version: ">=1.0"
+operators:
+  - find_plane
+  - preview_dark_mask
